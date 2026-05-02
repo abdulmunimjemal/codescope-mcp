@@ -1,0 +1,80 @@
+{
+  "name": "codescope",
+  "version": "0.1.0",
+  "description": "Local-first codebase knowledge-graph MCP server. Parses your repo into a symbol graph and serves it to AI coding agents so they stop wasting tokens re-scanning files. Watch-first: the graph stays fresh as you type.",
+  "type": "module",
+  "bin": {
+    "codescope": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18.3"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "selfcheck": "node dist/cli.js --help",
+    "prepublishOnly": "pnpm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "codebase",
+    "knowledge-graph",
+    "code-graph",
+    "ai-agent",
+    "claude-code",
+    "cursor",
+    "codex",
+    "tree-sitter",
+    "code-search",
+    "local-first",
+    "token-efficiency"
+  ],
+  "author": "Abdulmunim Jemal",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abdulmunimjemal/codescope.git"
+  },
+  "homepage": "https://github.com/abdulmunimjemal/codescope#readme",
+  "bugs": {
+    "url": "https://github.com/abdulmunimjemal/codescope/issues"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "better-sqlite3": "^12.10.0",
+    "chokidar": "^5.0.0",
+    "ignore": "^7.0.5",
+    "picocolors": "^1.1.1",
+    "tinyglobby": "^0.2.17",
+    "tree-sitter-wasms": "^0.1.13",
+    "web-tree-sitter": "^0.24.7",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.9.1",
+    "gpt-tokenizer": "^3.4.0",
+    "tsup": "^8.5.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.7"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "better-sqlite3"
+    ]
+  }
+}
