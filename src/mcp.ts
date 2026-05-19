@@ -64,6 +64,49 @@ export function createServer(store: GraphStore): McpServer {
   );
 
   server.registerTool(
+    "find_callees",
+    {
+      title: "Find callees",
+      description:
+        "List the functions/methods that a given symbol calls (resolved to their definitions). The outgoing side of the call graph — what this symbol depends on.",
+      inputSchema: {
+        name: z.string().describe("the calling function/method name"),
+        limit: z.number().int().positive().max(500).optional(),
+      },
+    },
+    async ({ name, limit }) => textResult(fmt.formatSymbols(store.findCallees(name, { limit }))),
+  );
+
+  server.registerTool(
+    "impact",
+    {
+      title: "Change impact / blast radius",
+      description:
+        "Show the transitive callers of a symbol — everything that could be affected if you change it — annotated with hop distance. Use before editing a widely-used function.",
+      inputSchema: {
+        name: z.string(),
+        depth: z.number().int().min(1).max(6).optional().describe("hops to expand (default 3)"),
+        limit: z.number().int().positive().max(300).optional(),
+      },
+    },
+    async ({ name, depth, limit }) => textResult(fmt.formatImpact(store.impact(name, { depth, limit }))),
+  );
+
+  server.registerTool(
+    "context",
+    {
+      title: "Build task context",
+      description:
+        "Given a task or feature query, return a compact, ranked relevance map: the matching symbols plus their immediate call neighbourhood, ordered by how widely each is called. The fastest way to orient an agent before a change — graph facts instead of reading files.",
+      inputSchema: {
+        query: z.string().describe("a task description or symbol/feature name"),
+        maxSymbols: z.number().int().min(5).max(100).optional().describe("cap on symbols (default 30)"),
+      },
+    },
+    async ({ query, maxSymbols }) => textResult(fmt.formatContext(store.context(query, { maxSymbols }))),
+  );
+
+  server.registerTool(
     "find_references",
     {
       title: "Find references",

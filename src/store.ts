@@ -1,5 +1,7 @@
 import Database from "better-sqlite3";
 import type {
+  ContextBundle,
+  ImpactRow,
   IndexStats,
   Neighborhood,
   ParsedRef,
@@ -259,17 +261,136 @@ export class GraphStore {
       .map(toSymbolRow);
   }
 
-  /** Symbols that call a given name (both bare `foo()` and `x.foo()`). */
+  /**
+   * Distinct callers of a name (both bare `foo()` and `x.foo()`). Multiple call
+   * sites from the same caller in the same file collapse to one row — fewer
+   * tokens and a more useful "who depends on this" answer.
+   */
   findCallers(name: string, opts: { limit?: number } = {}): RefRow[] {
     return this.db
       .prepare<[string, number], RefDbRow>(
-        `SELECT r.id, f.path AS file, r.from_symbol, r.name, r.kind, r.start_row, r.start_col
+        `SELECT MIN(r.id) AS id, f.path AS file, r.from_symbol, r.name,
+                MIN(r.kind) AS kind, MIN(r.start_row) AS start_row, MIN(r.start_col) AS start_col
          FROM refs r JOIN files f ON f.id = r.file_id
          WHERE r.name = ? AND r.kind IN ('call', 'method')
-         ORDER BY f.path, r.start_row LIMIT ?`,
+         GROUP BY f.path, r.from_symbol
+         ORDER BY f.path, start_row LIMIT ?`,
       )
       .all(name, clampLimit(opts.limit))
       .map(toRefRow);
+  }
+
+  /** The definitions that a symbol calls, resolved kind-aware to project symbols. */
+  findCallees(name: string, opts: { limit?: number } = {}): SymbolRow[] {
+    const limit = clampLimit(opts.limit);
+    const out: SymbolRow[] = [];
+    const seen = new Set<string>();
+    for (const callee of this.calleesOf(name)) {
+      const defs = this.resolveCallee(callee.name, callee.kind, 6);
+      if (!defs) continue;
+      for (const d of defs) {
+        const key = `${d.name}@${d.file}:${d.startRow}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          out.push(d);
+          if (out.length >= limit) return out;
+        }
+      }
+    }
+    return out;
+  }
+
+  /** How many call sites reference this name (popularity / centrality signal). */
+  callerCount(name: string): number {
+    return (
+      this.db
+        .prepare<[string], { n: number }>(
+          "SELECT COUNT(*) AS n FROM refs WHERE name = ? AND kind IN ('call','method')",
+        )
+        .get(name)?.n ?? 0
+    );
+  }
+
+  /**
+   * The blast radius of changing a symbol: its transitive callers, breadth-first,
+   * annotated with hop distance and ordered nearest-first. Answers "what could
+   * break if I change this?" without reading the codebase.
+   */
+  impact(name: string, opts: { depth?: number; limit?: number } = {}): ImpactRow[] {
+    const depth = Math.max(1, Math.min(opts.depth ?? 3, 6));
+    const limit = clampLimit(opts.limit, 300);
+    const distance = new Map<string, number>([[name, 0]]);
+    let frontier = [name];
+    for (let d = 0; d < depth && frontier.length > 0 && distance.size < limit; d++) {
+      const next: string[] = [];
+      for (const node of frontier) {
+        for (const caller of this.callersOf(node)) {
+          if (!distance.has(caller)) {
+            distance.set(caller, d + 1);
+            next.push(caller);
+          }
+        }
+      }
+      frontier = next;
+    }
+    const out: ImpactRow[] = [];
+    for (const [n, dist] of distance) {
+      if (dist === 0) continue; // exclude the symbol itself
+      for (const def of this.getSymbol(n, { limit: 3 })) out.push({ ...def, distance: dist });
+    }
+    out.sort((a, b) => a.distance - b.distance || a.file.localeCompare(b.file));
+    return out.slice(0, limit);
+  }
+
+  /**
+   * A token-budgeted relevance map for a task: the symbols matching `query` plus
+   * their immediate call neighbourhood, ranked by call-site centrality, capped at
+   * `maxSymbols`. This is the slice of the codebase an agent needs to start a
+   * change — delivered as graph facts, not file dumps.
+   */
+  context(query: string, opts: { maxSymbols?: number } = {}): ContextBundle {
+    const maxSymbols = Math.max(5, Math.min(opts.maxSymbols ?? 30, 100));
+    const seeds = this.searchSymbols(query, { limit: Math.min(8, maxSymbols) });
+    const picked = new Map<string, SymbolRow>();
+    const key = (s: SymbolRow): string => `${s.name}@${s.file}:${s.startRow}`;
+    for (const s of seeds) picked.set(key(s), s);
+
+    // Gather neighbours of each seed, ranked by how widely they are called.
+    const candidates = new Map<string, { row: SymbolRow; score: number }>();
+    const edges: Array<{ from: string; to: string }> = [];
+    const edgeKeys = new Set<string>();
+    for (const seed of seeds) {
+      for (const callee of this.findCallees(seed.name, { limit: 15 })) {
+        addEdge(edges, edgeKeys, seed.name, callee.name);
+        const k = key(callee);
+        if (!picked.has(k) && !candidates.has(k)) {
+          candidates.set(k, { row: callee, score: this.callerCount(callee.name) });
+        }
+      }
+      for (const caller of this.findCallers(seed.name, { limit: 15 })) {
+        if (!caller.fromSymbol) continue;
+        addEdge(edges, edgeKeys, caller.fromSymbol, seed.name);
+        for (const def of this.getSymbol(caller.fromSymbol, { limit: 1 })) {
+          const k = key(def);
+          if (!picked.has(k) && !candidates.has(k)) {
+            candidates.set(k, { row: def, score: this.callerCount(def.name) });
+          }
+        }
+      }
+    }
+
+    const related = [...candidates.values()]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, Math.max(0, maxSymbols - picked.size))
+      .map((c) => c.row);
+
+    const keptNames = new Set([...seeds, ...related].map((s) => s.name));
+    return {
+      query,
+      seeds,
+      related,
+      edges: edges.filter((e) => keptNames.has(e.from) && keptNames.has(e.to)),
+    };
   }
 
   /** All references (calls + imports) to a name. */

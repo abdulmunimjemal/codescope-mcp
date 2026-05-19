@@ -103,6 +103,17 @@ export interface Neighborhood {
   unresolved: string[];
 }
 
+/** A symbol in a blast-radius result, with its hop distance from the root. */
+export type ImpactRow = SymbolRow & { distance: number };
+
+/** A token-budgeted task-context map: seed matches + ranked neighbours + edges. */
+export interface ContextBundle {
+  query: string;
+  seeds: SymbolRow[];
+  related: SymbolRow[];
+  edges: Array<{ from: string; to: string }>;
+}
+
 export interface IndexStats {
   files: number;
   symbols: number;

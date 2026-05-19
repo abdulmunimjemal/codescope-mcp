@@ -34,6 +34,9 @@ Commands:
   search <query> [path]   Fuzzy-search symbol names.
   get <name> [path]       Look up a definition by exact name.
   callers <name> [path]   List callers of a function/method.
+  callees <name> [path]   List what a function/method calls.
+  impact <name> [path]    Transitive callers (blast radius) of a symbol.
+  context <query> [path]  Ranked relevance map for a task (matches + neighbours).
   neighborhood <name>     Show the call neighbourhood around a symbol.
 
 Options:
@@ -146,6 +149,15 @@ async function cmdQuery(command: string, root: string, flags: Flags): Promise<vo
     case "callers":
       out = fmt.formatRefs(store.findCallers(term, { limit: flags.limit }));
       break;
+    case "callees":
+      out = fmt.formatSymbols(store.findCallees(term, { limit: flags.limit }));
+      break;
+    case "impact":
+      out = fmt.formatImpact(store.impact(term, { depth: flags.depth, limit: flags.limit }));
+      break;
+    case "context":
+      out = fmt.formatContext(store.context(term, { maxSymbols: flags.limit }));
+      break;
     case "neighborhood":
       out = fmt.formatNeighborhood(store.neighborhood(term, { depth: flags.depth, limit: flags.limit }));
       break;
@@ -213,6 +225,9 @@ async function main(): Promise<void> {
     case "search":
     case "get":
     case "callers":
+    case "callees":
+    case "impact":
+    case "context":
     case "neighborhood":
       // positional[0] is the term; the optional repo path is positional[1].
       return cmdQuery(command, resolve(flags.path ?? flags.positional[1] ?? "."), flags);
