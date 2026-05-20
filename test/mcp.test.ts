@@ -32,8 +32,9 @@ beforeEach(async () => {
     [
       sym("loadConfig", "function", { exported: true, signature: "function loadConfig()" }),
       sym("Config", "interface"),
+      sym("main", "function"),
     ],
-    [{ name: "loadConfig", kind: "call", fromSymbol: null, startRow: 3, startCol: 2 }],
+    [{ name: "loadConfig", kind: "call", fromSymbol: "main", startRow: 3, startCol: 2 }],
     1,
   );
 
@@ -61,10 +62,13 @@ describe("MCP server", () => {
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name).sort();
     expect(names).toEqual([
+      "context",
       "file_outline",
+      "find_callees",
       "find_callers",
       "find_references",
       "get_symbol",
+      "impact",
       "neighborhood",
       "search_symbols",
       "stats",
@@ -80,12 +84,17 @@ describe("MCP server", () => {
 
   it("answers find_callers", async () => {
     const res = await client.callTool({ name: "find_callers", arguments: { name: "loadConfig" } });
+    expect(textOf(res as never)).toContain("main"); // the caller, located at a.ts:4
+  });
+
+  it("answers context", async () => {
+    const res = await client.callTool({ name: "context", arguments: { query: "config" } });
     expect(textOf(res as never)).toContain("loadConfig");
   });
 
   it("answers stats", async () => {
     const res = await client.callTool({ name: "stats", arguments: {} });
-    expect(textOf(res as never)).toContain("symbols: 2");
+    expect(textOf(res as never)).toContain("symbols: 3");
   });
 
   it("validates input and rejects bad arguments", async () => {

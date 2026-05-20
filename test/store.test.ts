@@ -104,6 +104,40 @@ describe("GraphStore", () => {
     expect(n.edges).not.toContainEqual({ from: "caller", to: "map" });
   });
 
+  it("finds callees, impact (blast radius), and task context", () => {
+    store.replaceFile(
+      { path: "a.ts", lang: "typescript", hash: "h", size: 1, mtime: 0 },
+      [
+        sym({ name: "top", kind: "function" }),
+        sym({ name: "main", kind: "function" }),
+        sym({ name: "helper", kind: "function" }),
+        sym({ name: "leaf", kind: "function" }),
+      ],
+      [
+        ref({ name: "main", kind: "call", fromSymbol: "top" }),
+        ref({ name: "helper", kind: "call", fromSymbol: "main" }),
+        ref({ name: "leaf", kind: "call", fromSymbol: "helper" }),
+      ],
+      1,
+    );
+
+    // callees: what does main call?
+    expect(store.findCallees("main").map((s) => s.name)).toEqual(["helper"]);
+
+    // impact: who is (transitively) affected by changing leaf?
+    const impacted = store.impact("leaf", { depth: 3 });
+    const byName = new Map(impacted.map((r) => [r.name, r.distance]));
+    expect(byName.get("helper")).toBe(1);
+    expect(byName.get("main")).toBe(2);
+    expect(byName.get("top")).toBe(3);
+
+    // context: a query surfaces the matching symbol plus its neighbourhood
+    const ctx = store.context("helper", { maxSymbols: 10 });
+    expect(ctx.seeds.map((s) => s.name)).toContain("helper");
+    const all = [...ctx.seeds, ...ctx.related].map((s) => s.name);
+    expect(all).toEqual(expect.arrayContaining(["helper", "main", "leaf"]));
+  });
+
   it("replaces a file's data incrementally without touching others", () => {
     store.replaceFile(
       { path: "a.ts", lang: "typescript", hash: "h1", size: 1, mtime: 0 },

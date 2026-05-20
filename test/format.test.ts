@@ -35,11 +35,11 @@ describe("format", () => {
     expect(formatRefs([])).toMatch(/No references/);
   });
 
-  it("renders references", () => {
+  it("renders references compactly (no redundant target name)", () => {
     const refs: RefRow[] = [
       { id: 1, file: "a.ts", fromSymbol: "main", name: "helper", kind: "call", startRow: 4, startCol: 2 },
     ];
-    expect(formatRefs(refs)).toBe("main → helper [call] — a.ts:5");
+    expect(formatRefs(refs)).toBe("a.ts:5  main");
   });
 
   it("renders a neighbourhood with definitions and edges", () => {
