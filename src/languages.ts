@@ -11,12 +11,16 @@ import type { SymbolKind } from "./types.js";
  * declaratively here and interpreted by a single generic walker.
  */
 
-export type NameStrategy = "field" | "c_declarator";
+export type NameStrategy = "field" | "c_declarator" | "first_typed";
 
 export interface DefRule {
   kind: SymbolKind;
-  /** How to read the definition's name (default: the `name` field). */
+  /** How to read the definition's name (default: `field` on `name`). */
   name?: NameStrategy;
+  /** For the `field` strategy: which field holds the name (default `name`). */
+  nameField?: string;
+  /** For the `first_typed` strategy: pick the first named child of these types. */
+  nameTypes?: string[];
 }
 
 export interface CallRule {
@@ -285,6 +289,126 @@ const php: LanguageConfig = {
   exportTypes: new Set(),
 };
 
+const scala: LanguageConfig = {
+  id: "scala",
+  wasm: "scala",
+  defs: {
+    class_definition: { kind: "class" },
+    object_definition: { kind: "class" },
+    trait_definition: { kind: "interface" },
+    function_definition: { kind: "method" },
+    type_definition: { kind: "type" },
+  },
+  functionBindings: new Set(),
+  nestedFunctionsAreMethods: false,
+  callRules: [
+    { type: "call_expression", fnField: "function", memberTypes: ["field_expression"], memberField: "field" },
+  ],
+  importRules: [{ type: "import_declaration", childTypes: ["stable_identifier", "identifier"] }],
+  exportTypes: new Set(),
+};
+
+const solidity: LanguageConfig = {
+  id: "solidity",
+  wasm: "solidity",
+  defs: {
+    contract_declaration: { kind: "class" },
+    interface_declaration: { kind: "interface" },
+    library_declaration: { kind: "class" },
+    function_definition: { kind: "method" },
+    modifier_definition: { kind: "function" },
+    struct_declaration: { kind: "class" },
+    enum_declaration: { kind: "enum" },
+  },
+  functionBindings: new Set(),
+  nestedFunctionsAreMethods: false,
+  callRules: [{ type: "call_expression", fnField: "function" }],
+  importRules: [{ type: "import_directive", field: "source" }],
+  exportTypes: new Set(),
+};
+
+const zig: LanguageConfig = {
+  id: "zig",
+  wasm: "zig",
+  defs: { function_declaration: { kind: "function" } },
+  functionBindings: new Set(),
+  nestedFunctionsAreMethods: false,
+  callRules: [{ type: "call_expression", fnField: "function" }],
+  importRules: [],
+  exportTypes: new Set(),
+};
+
+const kotlin: LanguageConfig = {
+  id: "kotlin",
+  wasm: "kotlin",
+  defs: {
+    class_declaration: { kind: "class", name: "first_typed", nameTypes: ["type_identifier"] },
+    object_declaration: { kind: "class", name: "first_typed", nameTypes: ["type_identifier"] },
+    function_declaration: { kind: "function", name: "first_typed", nameTypes: ["simple_identifier"] },
+  },
+  functionBindings: new Set(),
+  nestedFunctionsAreMethods: true,
+  callRules: [],
+  importRules: [{ type: "import_header", childTypes: ["identifier"] }],
+  exportTypes: new Set(),
+};
+
+const objc: LanguageConfig = {
+  id: "objc",
+  wasm: "objc",
+  defs: {
+    class_interface: { kind: "class", name: "first_typed", nameTypes: ["identifier"] },
+    class_implementation: { kind: "class", name: "first_typed", nameTypes: ["identifier"] },
+    method_declaration: { kind: "method", name: "first_typed", nameTypes: ["identifier"] },
+    method_definition: { kind: "method", name: "first_typed", nameTypes: ["identifier"] },
+  },
+  functionBindings: new Set(),
+  nestedFunctionsAreMethods: false,
+  callRules: [{ type: "call_expression", fnField: "function" }],
+  importRules: [{ type: "preproc_include", field: "path" }],
+  exportTypes: new Set(),
+};
+
+const lua: LanguageConfig = {
+  id: "lua",
+  wasm: "lua",
+  defs: {
+    function_definition_statement: { kind: "function" },
+    local_function_definition_statement: { kind: "function" },
+  },
+  functionBindings: new Set(),
+  nestedFunctionsAreMethods: false,
+  callRules: [],
+  importRules: [],
+  exportTypes: new Set(),
+};
+
+const bash: LanguageConfig = {
+  id: "bash",
+  wasm: "bash",
+  defs: { function_definition: { kind: "function" } },
+  functionBindings: new Set(),
+  nestedFunctionsAreMethods: false,
+  callRules: [],
+  importRules: [],
+  exportTypes: new Set(),
+};
+
+const ocaml: LanguageConfig = {
+  id: "ocaml",
+  wasm: "ocaml",
+  defs: {
+    let_binding: { kind: "function", name: "field", nameField: "pattern" },
+    module_definition: { kind: "class" },
+    type_definition: { kind: "type" },
+  },
+  functionBindings: new Set(),
+  nestedFunctionsAreMethods: false,
+  callRules: [],
+  importRules: [],
+  exportTypes: new Set(),
+};
+
 /** All languages codescope can parse, keyed by config id. */
 export const LANGUAGES: Record<string, LanguageConfig> = {
   typescript,
@@ -299,6 +423,14 @@ export const LANGUAGES: Record<string, LanguageConfig> = {
   cpp,
   csharp,
   php,
+  scala,
+  solidity,
+  zig,
+  kotlin,
+  objc,
+  lua,
+  bash,
+  ocaml,
 };
 
 /** File extension → language id. */
@@ -326,6 +458,18 @@ const EXT_TO_LANG: Record<string, string> = {
   ".hh": "cpp",
   ".cs": "csharp",
   ".php": "php",
+  ".scala": "scala",
+  ".sc": "scala",
+  ".sol": "solidity",
+  ".zig": "zig",
+  ".kt": "kotlin",
+  ".kts": "kotlin",
+  ".m": "objc",
+  ".lua": "lua",
+  ".sh": "bash",
+  ".bash": "bash",
+  ".ml": "ocaml",
+  ".mli": "ocaml",
 };
 
 /** The set of file extensions codescope indexes (with leading dot). */

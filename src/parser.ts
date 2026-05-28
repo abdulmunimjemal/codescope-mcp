@@ -109,7 +109,7 @@ function buildSymbol(
   containerKind: SymbolKind | null,
   lang: LanguageConfig,
 ): ParsedSymbol | null {
-  const name = symbolName(node, rule.name ?? "field");
+  const name = symbolName(node, rule);
   if (!name) return null;
   let kind = rule.kind;
   if (kind === "function" && lang.nestedFunctionsAreMethods && containerKind === "class") {
@@ -130,9 +130,20 @@ function buildSymbol(
   };
 }
 
-function symbolName(node: Parser.SyntaxNode, strategy: DefRule["name"]): string | null {
-  if (strategy === "c_declarator") return cDeclaratorName(node);
-  return node.childForFieldName("name")?.text ?? null;
+function symbolName(node: Parser.SyntaxNode, rule: DefRule): string | null {
+  switch (rule.name ?? "field") {
+    case "c_declarator":
+      return cDeclaratorName(node);
+    case "first_typed": {
+      const types = rule.nameTypes ?? [];
+      for (const child of node.namedChildren) {
+        if (types.includes(child.type)) return child.text;
+      }
+      return null;
+    }
+    default:
+      return node.childForFieldName(rule.nameField ?? "name")?.text ?? null;
+  }
 }
 
 /** Dig through C/C++ declarator chains (`int *foo(...)`) to the actual name. */
