@@ -88,20 +88,26 @@ TypeScript repo and trails ~6% on the Python monorepo (long file paths), so call
 it parity. codescope also now matches codegraph's **core graph tools**
 (`callers`, `callees`, `impact`, `context`).
 
+codescope has since closed the feature gaps it could: it now ships **20
+languages**, an **`affected`** (changed-files → impacted tests) tool, and an
+**`install`** command that auto-wires it into Claude Code and Cursor — plus the
+`callers`/`callees`/`impact`/`context` parity above.
+
 What **codegraph still leads on**, and codescope does not claim to beat:
 
-- **Language breadth** — 20+ languages vs codescope's 12.
-- **Extra tooling** — `affected` (changed-files → impacted tests) and agent
-  auto-install (`codegraph install`), which codescope doesn't have.
 - **Richer nodes** — codegraph also indexes constants, properties, and routes as
   graph nodes (part of why its index is larger).
+- **A couple more languages / agents** — codegraph advertises 20+ languages and
+  auto-installs into more agents (Codex, opencode, Hermes); codescope auto-wires
+  Claude Code + Cursor and prints copy-paste config for the rest.
 - **Maturity & adoption** — 35k★, a real user base, and battle-testing codescope
-  can't match on day one.
+  can't match on day one. *Adoption is earned from the community, not claimed.*
 
-So: **codescope is faster, smaller, and more token-efficient with feature parity
-on the core graph queries; codegraph is broader and more mature.** Pick codescope
-when footprint, indexing speed, and token cost matter most; pick codegraph when
-you need maximum language coverage and the extra tooling.
+So: **codescope is faster, smaller, and more token-efficient, with parity on the
+graph queries, `affected`, and agent install across 20 languages; codegraph's
+remaining edge is maturity and a slightly wider surface.** Pick codescope when
+footprint, indexing speed, and token cost matter; pick codegraph for the most
+battle-tested option.
 
 > The token-reduction numbers in the first half of this doc measure codescope vs
 > *reading whole files* (the same baseline codegraph reports its 57% against) —

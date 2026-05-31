@@ -36,12 +36,12 @@ incumbent and shares codescope's architecture. In a **measured head-to-head**
 - **~4× faster indexing** (696 ms vs 2,855 ms on a 262-file repo; 5.2 s vs 20 s on 3,500 files).
 - **3–5× smaller index** on disk (2.5 MB vs 8.2 MB; 22.9 MB vs 112.8 MB).
 - **Fewer tokens per answer** for definition lookups on every repo tested; callers is ≈parity.
-- Feature parity on the core graph queries: `callers`, `callees`, `impact`, `context`.
+- **Feature parity:** `callers`, `callees`, `impact`, `context`, **`affected`** (test-impact), and **`install`** (agent auto-wiring) — plus **20 languages**.
 
-codegraph still leads on **language breadth** (20+ vs 12), **extra tooling**
-(`affected` test-impact, agent auto-install), and **maturity/adoption**. Pick
-codescope when footprint, index speed, and token cost matter most; pick codegraph
-when you need the widest language coverage and the extra tooling.
+codegraph still leads on **maturity & adoption** (35k★, a real user base) and
+indexes a few extra node kinds (constants, properties, routes). Pick codescope
+when footprint, index speed, and token cost matter; pick codegraph for the most
+battle-tested option.
 
 ## Install
 
@@ -55,11 +55,20 @@ collides with an existing package; the installed command is still `codescope`.)
 
 ## Quick start
 
-Point your agent at codescope as an MCP server. It indexes the repo, starts
-watching for changes, and serves the graph over stdio:
+The one-liner — wire codescope into your agents automatically, from your repo:
 
 ```bash
-codescope mcp /path/to/your/repo
+npx @abdulmunimjemal/codescope install     # adds codescope to Claude Code + Cursor
+```
+
+That writes the MCP server config (non-destructively) so your agent launches
+codescope on the repo. Restart the agent and you're done. `--agent claude|cursor`
+targets one; `--global` writes to your home dir instead of the project.
+
+Prefer to wire it by hand? The server command is:
+
+```bash
+codescope mcp /path/to/your/repo            # index, watch, and serve over stdio
 ```
 
 **Claude Code** (`.mcp.json` or `claude mcp add`):
@@ -82,6 +91,10 @@ codescope index .                       # build the graph, print stats
 codescope search useState               # fuzzy symbol search
 codescope get GraphStore                # jump to a definition
 codescope callers parseSource           # who calls this
+codescope callees indexAll              # what it calls
+codescope impact GraphStore             # blast radius before a change
+codescope context "auth flow"           # ranked relevance map for a task
+codescope affected src/store.ts         # which tests are affected by a change
 codescope neighborhood handleRequest --depth 3
 codescope watch .                       # keep the graph fresh, log updates
 ```
@@ -127,7 +140,10 @@ The index lives in `.codescope/graph.db` (add `.codescope/` to your
 
 ## Languages
 
-TypeScript, JavaScript, TSX/JSX, Python, Go, Rust, Java, Ruby, C, C++, C#, PHP.
+20 languages: TypeScript, JavaScript, TSX/JSX, Python, Go, Rust, Java, Ruby, C,
+C++, C#, PHP, Scala, Solidity, Zig, Kotlin, Objective-C, Lua, Bash, and OCaml.
+Definition extraction (functions, classes, methods, …) works for all; call and
+import edges are available for the languages whose grammars expose them.
 
 ## Programmatic API
 
