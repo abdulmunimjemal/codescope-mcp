@@ -1,5 +1,11 @@
 # codescope
 
+[![npm](https://img.shields.io/npm/v/%40abdulmunimjemal%2Fcodescope?color=8b5cf6)](https://www.npmjs.com/package/@abdulmunimjemal/codescope)
+[![CI](https://github.com/abdulmunimjemal/codescope/actions/workflows/ci.yml/badge.svg)](https://github.com/abdulmunimjemal/codescope/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![node](https://img.shields.io/node/v/%40abdulmunimjemal%2Fcodescope)](https://nodejs.org)
+[![docs](https://img.shields.io/badge/docs-oss.munim.io-8b5cf6)](https://oss.munim.io/codescope/)
+
 > Local-first codebase knowledge-graph MCP server. Parses your repo into a symbol
 > graph and serves it to AI coding agents so they stop wasting tokens re-scanning
 > files. **Watch-first:** the graph stays fresh as you type.
@@ -173,6 +179,30 @@ watch(indexer, { onChange: (file, action) => console.log(action, file) });
 - Symbol extraction targets top-level and class-member definitions; deeply nested
   local helpers are captured, anonymous expressions are not.
 
+## Roadmap
+
+- **Cross-file resolution** — resolve an imported callee to its specific
+  definition file (and, eventually, type-aware method resolution) to push
+  precision toward 1.0.
+- **More languages** — the language system is config-driven; new grammars are a
+  table entry plus a test. [Open a request or send a PR.](./CONTRIBUTING.md#adding-a-language-a-great-first-contribution)
+- **Richer nodes** — optionally index constants, properties, and routes.
+
+## Contributing
+
+Contributions are very welcome — codescope is small, fully tested, and designed
+to be easy to extend. Adding a language is often a single config object plus a
+test. See **[CONTRIBUTING.md](./CONTRIBUTING.md)** for setup, the project layout,
+and a step-by-step "add a language" guide, and please follow the
+[Code of Conduct](./CODE_OF_CONDUCT.md).
+
+```bash
+pnpm install && pnpm test && pnpm typecheck && pnpm build
+```
+
+Changelog: [CHANGELOG.md](./CHANGELOG.md) · Security: [SECURITY.md](./SECURITY.md)
+
 ## License
 
 MIT © Abdulmunim Jemal
+
