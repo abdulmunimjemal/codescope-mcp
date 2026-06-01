@@ -161,7 +161,7 @@ async function cmdQuery(command: string, root: string, flags: Flags): Promise<vo
       out = fmt.formatSymbols(store.getSymbol(term, { limit: flags.limit }));
       break;
     case "callers":
-      out = fmt.formatRefs(store.findCallers(term, { limit: flags.limit }));
+      out = fmt.formatCallers(store.findCallers(term, { limit: flags.limit }));
       break;
     case "callees":
       out = fmt.formatSymbols(store.findCallees(term, { limit: flags.limit }));

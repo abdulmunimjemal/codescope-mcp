@@ -61,7 +61,7 @@ export function createServer(store: GraphStore): McpServer {
         limit: z.number().int().positive().max(500).optional(),
       },
     },
-    async ({ name, limit }) => textResult(fmt.formatRefs(store.findCallers(name, { limit }))),
+    async ({ name, limit }) => textResult(fmt.formatCallers(store.findCallers(name, { limit }))),
   );
 
   server.registerTool(

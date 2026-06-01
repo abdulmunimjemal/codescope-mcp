@@ -33,6 +33,25 @@ export function formatSymbols(rows: SymbolRow[]): string {
   return rows.map(symbolLine).join("\n");
 }
 
+/**
+ * Callers grouped by file — the file path is written once and the calling
+ * symbols are joined, which is both fewer tokens and easier to scan than one
+ * line per call site.
+ */
+export function formatCallers(rows: RefRow[]): string {
+  if (rows.length === 0) return "No callers.";
+  const byFile = new Map<string, { line: number; names: Set<string> }>();
+  for (const r of rows) {
+    const entry = byFile.get(r.file) ?? { line: r.startRow + 1, names: new Set<string>() };
+    entry.line = Math.min(entry.line, r.startRow + 1);
+    entry.names.add(r.fromSymbol ?? "(top level)");
+    byFile.set(r.file, entry);
+  }
+  return [...byFile.entries()]
+    .map(([file, { line, names }]) => `${file}:${line}  ${[...names].join(", ")}`)
+    .join("\n");
+}
+
 export function formatRefs(rows: RefRow[]): string {
   if (rows.length === 0) return "No references.";
   // The referenced name is the query itself, so don't repeat it on every line.
