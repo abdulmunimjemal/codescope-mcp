@@ -1,6 +1,6 @@
 {
   "name": "@abdulmunimjemal/codescope",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Local-first codebase knowledge-graph MCP server. Parses your repo into a symbol graph and serves it to AI coding agents so they stop wasting tokens re-scanning files. Watch-first: the graph stays fresh as you type.",
   "type": "module",
   "bin": {
