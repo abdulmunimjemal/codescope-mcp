@@ -53,6 +53,44 @@ per query). For the *"what's in this file"* task, `file_outline` is **59–86%**
 smaller than reading the file. Bigger files ⇒ bigger savings, which is why the
 reduction climbs on large repos.
 
+## Accuracy — "did it return the right answer?"
+
+Speed and tokens are only half the story; the half that matters most for an agent
+is **whether the answer is correct.** This is measured against an oracle that
+*is* correct: the **TypeScript compiler** (`LanguageService.findReferences`, the
+engine behind go-to-definition in your editor).
+
+For each definition we compute the TRUE set of files containing a call to it
+(per the compiler), then score each tool's `callers` answer:
+
+```bash
+node bench/accuracy.mjs <single-package-dir>
+```
+
+Run on three packages of the official MCP TypeScript SDK (single packages so the
+compiler resolves modules exactly; oracle truth scoped to each package's own
+source so every tool is judged on the same files):
+
+| package | codescope (P / R / **F1**) | codegraph (P / R / **F1**) | winner |
+|---------|---------------------------|----------------------------|:------:|
+| core (88 defs)   | 0.93 / 1.00 / **0.952** | 0.71 / 0.67 / 0.664 | **codescope** |
+| client (39 defs) | 0.89 / 1.00 / **0.916** | 0.80 / 0.65 / 0.701 | **codescope** |
+| server (36 defs) | 0.94 / 1.00 / **0.956** | 0.94 / 0.90 / 0.906 | **codescope** |
+
+(P = precision, R = recall, F1 = harmonic mean, vs the compiler's ground truth.)
+
+**codescope returns the right answer more often on every package.** The driver is
+**recall**: codegraph *misses 10–35% of true callers* (R 0.65–0.90), while
+codescope's name-based lookup misses none (R 1.00). codescope's precision (0.89–
+0.94) — the occasional false positive from a same-named symbol — matches or beats
+codegraph's, so it wins net on every package.
+
+The remaining headroom is codescope's precision on collisions (a function/method
+sharing a name with another). True type-aware resolution (an LSP-grade type
+checker) is the theoretical ceiling neither tree-sitter tool reaches; it's the
+roadmap item for pushing precision to 1.0. As measured today, **codescope is the
+more accurate of the two.**
+
 ## codescope vs codegraph — measured head-to-head
 
 [codegraph](https://github.com/colbymchenry/codegraph) (~35k★) is the leading

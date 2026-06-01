@@ -33,15 +33,16 @@ incumbent and shares codescope's architecture. In a **measured head-to-head**
 ([BENCHMARKS.md](./BENCHMARKS.md), both tools run on the same repos), codescope
 **wins the efficiency axes**:
 
+- **More accurate answers.** Scored against the **TypeScript compiler** as ground truth (`bench/accuracy.mjs`), codescope's `callers` beat codegraph's F1 on every package tested (0.95 vs 0.66, 0.92 vs 0.70, 0.96 vs 0.91) — it never misses a true caller (recall 1.00) where codegraph misses 10–35%.
 - **3.5–7.6× faster indexing** (670 ms vs 2,335 ms on 262 files; 2.6 s vs 20 s on 3,500) — parsing is fanned across a worker-thread pool.
 - **3–5× smaller index** on disk (2.5 MB vs 8.2 MB; 22.8 MB vs 112.8 MB).
 - **Fewer tokens per answer** — on *both* definition and callers queries, every repo tested.
 - **Feature parity:** `callers`, `callees`, `impact`, `context`, **`affected`** (test-impact), and **`install`** (agent auto-wiring) — across **21 languages**.
 
-codegraph still leads on **maturity & adoption** (35k★, a real user base), a few
-extra node kinds (constants, properties, routes), and true cross-file resolution.
-Pick codescope when footprint, index speed, and token cost matter; pick codegraph
-for the most battle-tested option. Full numbers in [BENCHMARKS.md](./BENCHMARKS.md).
+codegraph still leads on **maturity & adoption** (35k★, a real user base) and a
+few extra node kinds (constants, properties, routes). Pick codescope when
+accuracy, footprint, index speed, and token cost matter; pick codegraph for the
+most battle-tested option. Full numbers in [BENCHMARKS.md](./BENCHMARKS.md).
 
 ## Install
 

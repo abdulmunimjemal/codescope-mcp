@@ -178,6 +178,27 @@ describe("GraphStore", () => {
     expect(store.removeFile("a.ts")).toBe(false); // already gone
   });
 
+  it("finds callers across every file that calls a symbol (recall)", () => {
+    // The accuracy win rests on this: callers are found in ALL files that call
+    // the name, never missing one.
+    store.replaceFile(
+      { path: "src/util.ts", lang: "typescript", hash: "h1", size: 1, mtime: 0 },
+      [sym({ name: "doThing", kind: "function" })],
+      [],
+      1,
+    );
+    for (const f of ["a", "b", "c"]) {
+      store.replaceFile(
+        { path: `src/${f}.ts`, lang: "typescript", hash: f, size: 1, mtime: 0 },
+        [sym({ name: `use_${f}`, kind: "function" })],
+        [ref({ name: "doThing", kind: "call", fromSymbol: `use_${f}` })],
+        1,
+      );
+    }
+    const callerFiles = new Set(store.findCallers("doThing").map((r) => r.file));
+    expect(callerFiles).toEqual(new Set(["src/a.ts", "src/b.ts", "src/c.ts"]));
+  });
+
   it("does substring search via the trigram FTS index (3+ chars)", () => {
     store.replaceFile(
       { path: "a.ts", lang: "typescript", hash: "h", size: 1, mtime: 0 },
