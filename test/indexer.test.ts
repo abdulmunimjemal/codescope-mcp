@@ -94,6 +94,25 @@ describe("Indexer.indexAll", () => {
   });
 });
 
+describe("Indexer.indexAll (at scale)", () => {
+  it("indexes a large file set correctly (worker pool in prod, fallback in tests)", async () => {
+    // 40 files crosses the threshold where indexAll prefers the worker pool;
+    // under vitest the un-built worker triggers the single-threaded fallback,
+    // so this asserts the pipeline is correct on both paths.
+    for (let i = 0; i < 40; i++) {
+      await write(`src/mod${i}.ts`, `export function fn${i}() { return helper${i}(); }`);
+    }
+    const result = await indexer.indexAll();
+    expect(result.indexed).toBe(40);
+    expect(result.errors).toEqual([]);
+    expect(store.stats().files).toBe(40);
+    // spot-check that parsing in workers produced the same symbols as in-process
+    expect(store.getSymbol("fn0")).toHaveLength(1);
+    expect(store.getSymbol("fn39")).toHaveLength(1);
+    expect(store.findCallers("helper7").map((r) => r.fromSymbol)).toContain("fn7");
+  });
+});
+
 describe("Indexer.indexFile", () => {
   it("reports indexed / skipped / unsupported outcomes", async () => {
     await write("a.ts", "export function a() {}");

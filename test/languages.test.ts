@@ -188,6 +188,17 @@ main() { helper; }`,
     ],
   },
   {
+    lang: "rescript",
+    ext: ".res",
+    source: `let helper = (x) => x
+let run = () => helper(1)`,
+    expectSymbols: [
+      ["helper", "function"],
+      ["run", "function"],
+    ],
+    expectCalls: [["helper", "call"]],
+  },
+  {
     lang: "ocaml",
     ext: ".ml",
     source: `let helper x = x
