@@ -33,15 +33,15 @@ incumbent and shares codescope's architecture. In a **measured head-to-head**
 ([BENCHMARKS.md](./BENCHMARKS.md), both tools run on the same repos), codescope
 **wins the efficiency axes**:
 
-- **~4× faster indexing** (696 ms vs 2,855 ms on a 262-file repo; 5.2 s vs 20 s on 3,500 files).
-- **3–5× smaller index** on disk (2.5 MB vs 8.2 MB; 22.9 MB vs 112.8 MB).
-- **Fewer tokens per answer** for definition lookups on every repo tested; callers is ≈parity.
-- **Feature parity:** `callers`, `callees`, `impact`, `context`, **`affected`** (test-impact), and **`install`** (agent auto-wiring) — plus **20 languages**.
+- **3.5–7.6× faster indexing** (670 ms vs 2,335 ms on 262 files; 2.6 s vs 20 s on 3,500) — parsing is fanned across a worker-thread pool.
+- **3–5× smaller index** on disk (2.5 MB vs 8.2 MB; 22.8 MB vs 112.8 MB).
+- **Fewer tokens per answer** — on *both* definition and callers queries, every repo tested.
+- **Feature parity:** `callers`, `callees`, `impact`, `context`, **`affected`** (test-impact), and **`install`** (agent auto-wiring) — across **21 languages**.
 
-codegraph still leads on **maturity & adoption** (35k★, a real user base) and
-indexes a few extra node kinds (constants, properties, routes). Pick codescope
-when footprint, index speed, and token cost matter; pick codegraph for the most
-battle-tested option.
+codegraph still leads on **maturity & adoption** (35k★, a real user base), a few
+extra node kinds (constants, properties, routes), and true cross-file resolution.
+Pick codescope when footprint, index speed, and token cost matter; pick codegraph
+for the most battle-tested option. Full numbers in [BENCHMARKS.md](./BENCHMARKS.md).
 
 ## Install
 
@@ -140,10 +140,10 @@ The index lives in `.codescope/graph.db` (add `.codescope/` to your
 
 ## Languages
 
-20 languages: TypeScript, JavaScript, TSX/JSX, Python, Go, Rust, Java, Ruby, C,
-C++, C#, PHP, Scala, Solidity, Zig, Kotlin, Objective-C, Lua, Bash, and OCaml.
-Definition extraction (functions, classes, methods, …) works for all; call and
-import edges are available for the languages whose grammars expose them.
+21 languages: TypeScript, JavaScript, TSX/JSX, Python, Go, Rust, Java, Ruby, C,
+C++, C#, PHP, Scala, Solidity, Zig, Kotlin, Objective-C, Lua, Bash, OCaml, and
+ReScript. Definition extraction (functions, classes, methods, …) works for all;
+call and import edges are available for the languages whose grammars expose them.
 
 ## Programmatic API
 

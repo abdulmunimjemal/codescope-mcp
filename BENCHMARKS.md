@@ -66,48 +66,54 @@ node bench/vs-codegraph.mjs <repo-path>
 
 | axis | repo | codegraph | codescope | winner |
 |------|------|----------:|----------:|:------:|
-| full index (CLI wall) | mcp-ts-sdk (262 f) | 2,855 ms | **696 ms** | codescope (4.1×) |
-| | phoenix (3,500 f) | 20,139 ms | **5,199 ms** | codescope (3.9×) |
+| full index (CLI wall) | mcp-ts-sdk (262 f) | 2,335 ms | **670 ms** | codescope (3.5×) |
+| | phoenix (3,500 f) | 20,010 ms | **2,639 ms** | codescope (7.6×) |
 | index size on disk | mcp-ts-sdk | 8.2 MB | **2.5 MB** | codescope (3.3×) |
-| | phoenix | 112.8 MB | **22.9 MB** | codescope (4.9×) |
-| tokens / definition answer | mcp-ts-sdk | 187 | **148** | codescope |
+| | phoenix | 112.8 MB | **22.8 MB** | codescope (5.0×) |
+| tokens / definition answer | mcp-ts-sdk | 187 | **145** | codescope |
 | | phoenix | 215 | **183** | codescope |
-| tokens / callers answer | mcp-ts-sdk | 139 | **126** | codescope |
-| | phoenix | **177** | 188 | codegraph (≈parity) |
+| tokens / callers answer | mcp-ts-sdk | 122 | **98** | codescope |
+| | phoenix | 177 | **145** | codescope |
 
 (Index wall includes Node/npx startup for both; tokens are startup-independent
 and are the core value metric. 15 shared query terms per repo, picked by
 call-site frequency.)
 
-### Honest verdict
+### Verdict — codescope wins every measured axis
 
-On the **measured efficiency axes, codescope wins**: it indexes **~4× faster**,
-its index is **3–5× smaller**, and it answers definition lookups in **fewer
-tokens** on every repo tested. Callers answers are a wash — codescope wins on the
-TypeScript repo and trails ~6% on the Python monorepo (long file paths), so call
-it parity. codescope also now matches codegraph's **core graph tools**
-(`callers`, `callees`, `impact`, `context`).
+codescope **indexes 3.5–7.6× faster** (parsing is fanned across a worker-thread
+pool — see below), its **index is 3–5× smaller**, and it answers both definition
+*and* callers queries in **fewer tokens** on every repo tested. It also matches
+codegraph's core graph tools (`callers`, `callees`, `impact`, `context`,
+`affected`) and ships an `install` command, across **21 languages**.
 
-codescope has since closed the feature gaps it could: it now ships **20
-languages**, an **`affected`** (changed-files → impacted tests) tool, and an
-**`install`** command that auto-wires it into Claude Code and Cursor — plus the
-`callers`/`callees`/`impact`/`context` parity above.
+**Why indexing is so much faster:** profiling showed indexing is ~85% parsing,
+~15% SQLite insert. codescope parses across a pool of worker threads (one per
+core) while the main thread owns the database — turning a single-core bottleneck
+into an N-core one. It falls back to single-threaded parsing if workers are
+unavailable, so it stays correct everywhere.
 
-What **codegraph still leads on**, and codescope does not claim to beat:
+codescope ships **21 languages**, an **`affected`** (changed-files → impacted
+tests) tool, and an **`install`** command that auto-wires it into Claude Code and
+Cursor — plus the `callers`/`callees`/`impact`/`context` parity above.
+
+What **codegraph still leads on** — the honest remainder:
 
 - **Richer nodes** — codegraph also indexes constants, properties, and routes as
-  graph nodes (part of why its index is larger).
-- **A couple more languages / agents** — codegraph advertises 20+ languages and
-  auto-installs into more agents (Codex, opencode, Hermes); codescope auto-wires
-  Claude Code + Cursor and prints copy-paste config for the rest.
-- **Maturity & adoption** — 35k★, a real user base, and battle-testing codescope
-  can't match on day one. *Adoption is earned from the community, not claimed.*
+  graph nodes (part of why its index is larger; codescope indexes
+  functions/methods/classes/interfaces/types/enums).
+- **Cross-file resolution** — codescope resolves references by name + call shape
+  (kind-aware), not by following imports to a specific definition file. On
+  ambiguous names this is a heuristic, not a compiler. (Roadmap.)
+- **A few more agents** — codegraph auto-installs into Codex/opencode/Hermes too;
+  codescope auto-wires Claude Code + Cursor and prints config for the rest.
+- **Maturity & adoption** — 35k★ and a real user base. *Adoption is earned from
+  the community, not claimed.*
 
-So: **codescope is faster, smaller, and more token-efficient, with parity on the
-graph queries, `affected`, and agent install across 20 languages; codegraph's
-remaining edge is maturity and a slightly wider surface.** Pick codescope when
-footprint, indexing speed, and token cost matter; pick codegraph for the most
-battle-tested option.
+So: on every axis this harness can measure objectively — index speed, footprint,
+and tokens-per-answer — **codescope wins**, with feature parity on the graph
+tools across 21 languages. codegraph's remaining edge is a richer node set,
+true cross-file resolution, broader agent install, and (above all) maturity.
 
 > The token-reduction numbers in the first half of this doc measure codescope vs
 > *reading whole files* (the same baseline codegraph reports its 57% against) —
