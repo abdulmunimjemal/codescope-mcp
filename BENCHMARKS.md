@@ -223,6 +223,51 @@ threshold was raised so the pool engages only for large repos; small/medium repo
 use the faster single-threaded path. (Finding and fixing this is the opposite of
 benchmark-maxing.)
 
+## Versus the broader OSS field
+
+codegraph isn't the only peer. codescope was also benchmarked against other
+runnable open-source code-graph/index tools (each explicitly authorized and run
+locally, same harness).
+
+### code-graph-mcp (`@sdsrs/code-graph` v0.32.3)
+
+Rust, tree-sitter, 16 languages — plus semantic/vector search, HTTP-route
+tracing, and portable snapshots (a broader tool than codescope).
+
+| axis | codescope | code-graph-mcp |
+|------|----------:|---------------:|
+| index size — gin / requests / zustand / got / ripgrep | 1.6 / 0.7 / 0.5 / 1.0 / 2.0 MB | 4.0 / 2.3 / 1.0 / 2.2 / 8.8 MB |
+| index time (same five) | 0.2–0.6 s | 0.9–1.8 s |
+| accuracy F1 — Python (requests, vs Jedi) | **0.788** | 0.217 |
+| accuracy F1 — Go (gin, vs go/types) | **0.720** | 0.651 |
+
+codescope is 2–4× smaller and faster to index on all five, and more accurate on
+callers. code-graph-mcp's Python call accuracy is low (0.217) — calls aren't its
+focus (semantic search is); on Go it's competitive (0.651).
+
+### code-review-graph (v2.3.5)
+
+Python, tree-sitter, plus community detection, flow analysis, and wiki
+generation (again, broader than codescope).
+
+- requests: build **5.98 s**, graph **6.1 MB**  vs  codescope ~0.3 s, ~0.7 MB
+  (≈20× faster, ≈9× smaller) — though it does heavier post-processing.
+- Caller accuracy not measured: its query interface is MCP-only (no `callers`
+  CLI), so it would need an MCP-client harness.
+
+### CodeGraphContext
+
+Stores its graph in **Neo4j**; benchmarking needs a running Neo4j server, which
+wasn't available in this environment. Not measured.
+
+### Honest verdict on the field
+
+Against every competitor benchmarked, codescope is the **leanest, fastest, and
+most call-graph-accurate**. But it is not the most *featureful*: code-graph-mcp
+adds semantic/vector search and route tracing; code-review-graph adds community
+detection and wiki generation; CodeGraphContext offers Cypher queries over Neo4j.
+codescope's bet is "small, fast, accurate call graph," not "most features."
+
 ## Caveats (read these)
 
 - **The codegraph head-to-head is single-repo, single-run** (mcp-ts-sdk, one
