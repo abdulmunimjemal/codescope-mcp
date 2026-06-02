@@ -1,9 +1,9 @@
 # codescope
 
-[![npm](https://img.shields.io/npm/v/%40abdulmunimjemal%2Fcodescope?color=8b5cf6)](https://www.npmjs.com/package/@abdulmunimjemal/codescope)
+[![npm](https://img.shields.io/npm/v/codescope-mcp?color=8b5cf6)](https://www.npmjs.com/package/codescope-mcp)
 [![CI](https://github.com/abdulmunimjemal/codescope/actions/workflows/ci.yml/badge.svg)](https://github.com/abdulmunimjemal/codescope/actions/workflows/ci.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
-[![node](https://img.shields.io/node/v/%40abdulmunimjemal%2Fcodescope)](https://nodejs.org)
+[![node](https://img.shields.io/node/v/codescope-mcp)](https://nodejs.org)
 [![docs](https://img.shields.io/badge/docs-oss.munim.io-8b5cf6)](https://oss.munim.io/codescope/)
 
 > Local-first codebase knowledge-graph MCP server. Parses your repo into a symbol
@@ -58,19 +58,20 @@ caller-accurate than both. Full numbers and methodology in
 ## Install
 
 ```bash
-npx @abdulmunimjemal/codescope mcp .          # zero-install, or:
-npm i -g @abdulmunimjemal/codescope           # then the `codescope` command is on your PATH
+npx codescope-mcp mcp .          # zero-install, or:
+npm i -g codescope-mcp           # then the `codescope` command is on your PATH
 ```
 
-Requires Node ≥ 18. (The npm package is scoped because the bare name `codescope`
-collides with an existing package; the installed command is still `codescope`.)
+Requires Node ≥ 18. (Published as `codescope-mcp` on npm because the bare
+`codescope` is taken; the installed command, repo, and docs are all just
+`codescope`.)
 
 ## Quick start
 
 The one-liner — wire codescope into your agents automatically, from your repo:
 
 ```bash
-npx @abdulmunimjemal/codescope install     # adds codescope to Claude Code + Cursor
+npx codescope-mcp install     # adds codescope to Claude Code + Cursor
 ```
 
 That writes the MCP server config (non-destructively) so your agent launches
@@ -88,13 +89,13 @@ codescope mcp /path/to/your/repo            # index, watch, and serve over stdio
 ```json
 {
   "mcpServers": {
-    "codescope": { "command": "npx", "args": ["-y", "@abdulmunimjemal/codescope", "mcp", "."] }
+    "codescope": { "command": "npx", "args": ["-y", "codescope-mcp", "mcp", "."] }
   }
 }
 ```
 
 **Cursor / Codex / any MCP client:** use the same command —
-`npx -y @abdulmunimjemal/codescope mcp .` over stdio.
+`npx -y codescope-mcp mcp .` over stdio.
 
 You can also drive it straight from the terminal:
 
@@ -163,7 +164,7 @@ call and import edges are available for the languages whose grammars expose them
 Everything is importable:
 
 ```ts
-import { GraphStore, Indexer, watch, parseSource } from "codescope";
+import { GraphStore, Indexer, watch, parseSource } from "codescope-mcp";
 
 const store = new GraphStore("graph.db");      // or ":memory:"
 const indexer = new Indexer(store, "/repo");

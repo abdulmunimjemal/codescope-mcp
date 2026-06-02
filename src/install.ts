@@ -3,7 +3,7 @@ import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 
 /** The npm package name and the MCP server key codescope registers under. */
-export const PACKAGE = "@abdulmunimjemal/codescope";
+export const PACKAGE = "codescope-mcp";
 export const MCP_SERVER_NAME = "codescope";
 
 /** Agents whose config is plain JSON with an `mcpServers` map (auto-wirable). */

@@ -4,6 +4,14 @@ All notable changes to codescope are documented here. This project adheres to
 [Semantic Versioning](https://semver.org) (pre-1.0: minor = features, patch =
 fixes/docs).
 
+## 0.5.0 — renamed on npm
+
+- Published unscoped as **`codescope-mcp`** instead of
+  `@abdulmunimjemal/codescope` (the bare `codescope` name is taken on npm). The
+  CLI command (`codescope`), repository, and docs are unchanged — only the npm
+  install id differs. The old scoped package is deprecated and points here.
+- The `install` command now writes `npx -y codescope-mcp …` into agent configs.
+
 ## 0.4.2
 
 - **Fix:** the worker-thread parse pool engaged too eagerly (>24 files); its
