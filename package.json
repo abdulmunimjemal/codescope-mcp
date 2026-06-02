@@ -1,6 +1,6 @@
 {
   "name": "codescope-mcp",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Local-first codebase knowledge-graph MCP server. Parses your repo into a symbol graph and serves it to AI coding agents so they stop wasting tokens re-scanning files. Watch-first: the graph stays fresh as you type.",
   "type": "module",
   "bin": {
@@ -46,11 +46,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/abdulmunimjemal/codescope.git"
+    "url": "git+https://github.com/abdulmunimjemal/codescope-mcp.git"
   },
-  "homepage": "https://github.com/abdulmunimjemal/codescope#readme",
+  "homepage": "https://github.com/abdulmunimjemal/codescope-mcp#readme",
   "bugs": {
-    "url": "https://github.com/abdulmunimjemal/codescope/issues"
+    "url": "https://github.com/abdulmunimjemal/codescope-mcp/issues"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",

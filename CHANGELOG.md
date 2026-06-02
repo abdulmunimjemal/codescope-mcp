@@ -4,6 +4,12 @@ All notable changes to codescope are documented here. This project adheres to
 [Semantic Versioning](https://semver.org) (pre-1.0: minor = features, patch =
 fixes/docs).
 
+## 0.5.1
+
+- The GitHub repo was renamed to **`codescope-mcp`** to match the npm package
+  (GitHub redirects the old URL). Updated repository/homepage/bug-tracker
+  metadata, badges, and clone instructions accordingly.
+
 ## 0.5.0 — renamed on npm
 
 - Published unscoped as **`codescope-mcp`** instead of

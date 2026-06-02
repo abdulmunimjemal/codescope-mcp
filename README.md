@@ -1,7 +1,7 @@
 # codescope
 
 [![npm](https://img.shields.io/npm/v/codescope-mcp?color=8b5cf6)](https://www.npmjs.com/package/codescope-mcp)
-[![CI](https://github.com/abdulmunimjemal/codescope/actions/workflows/ci.yml/badge.svg)](https://github.com/abdulmunimjemal/codescope/actions/workflows/ci.yml)
+[![CI](https://github.com/abdulmunimjemal/codescope-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/abdulmunimjemal/codescope-mcp/actions/workflows/ci.yml)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![node](https://img.shields.io/node/v/codescope-mcp)](https://nodejs.org)
 [![docs](https://img.shields.io/badge/docs-oss.munim.io-8b5cf6)](https://oss.munim.io/codescope/)

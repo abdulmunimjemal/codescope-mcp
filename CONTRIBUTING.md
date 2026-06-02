@@ -6,8 +6,8 @@ designed to be easy to extend. This guide gets you from clone to merged PR.
 ## Quick start
 
 ```bash
-git clone https://github.com/abdulmunimjemal/codescope.git
-cd codescope
+git clone https://github.com/abdulmunimjemal/codescope-mcp.git
+cd codescope-mcp
 pnpm install
 pnpm test          # 100+ vitest tests, no network
 pnpm typecheck     # tsc --noEmit (strict)
@@ -89,7 +89,7 @@ that only extracts definitions is still a useful, mergeable contribution.
   definitions only (Lua, Bash, OCaml, Kotlin calls).
 - **Cross-file resolution** — resolve an imported callee to its specific
   definition file to raise precision (see the roadmap in the README).
-- Pick up anything labelled [`good first issue`](https://github.com/abdulmunimjemal/codescope/labels/good%20first%20issue).
+- Pick up anything labelled [`good first issue`](https://github.com/abdulmunimjemal/codescope-mcp/labels/good%20first%20issue).
 
 ## Code of Conduct
 
